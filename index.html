@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Very Important Question</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body {
             display: flex;
@@ -15,52 +16,94 @@
             background-color: #ffebee;
             overflow: hidden;
             text-align: center;
+            margin: 0;
         }
-        h1 { color: #d32f2f; }
-        .buttons { margin-top: 20px; position: relative; width: 300px; height: 100px; }
+        h1 { color: #d32f2f; font-size: 2.5rem; margin-bottom: 10px; }
+        p { color: #555; font-size: 1.2rem; }
+        .buttons { margin-top: 30px; position: relative; width: 100%; max-width: 400px; height: 150px; }
         button {
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 15px 35px;
+            font-size: 20px;
+            font-weight: bold;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 50px;
             border: none;
-            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
         }
-        #yesBtn { background-color: #4caf50; color: white; }
+        #yesBtn { background-color: #4caf50; color: white; position: relative; z-index: 1; }
         #noBtn {
             background-color: #f44336;
             color: white;
             position: absolute;
+            transition: 0.1s ease; /* Makes the jump look smoother */
+        }
+        .success-msg {
+            display: none;
+            flex-direction: column;
+            align-items: center;
         }
     </style>
 </head>
 <body>
 
-    <h1>Will you be my Valentine? ❤️</h1>
-    <p>Think carefully... or don't.</p>
+    <div id="question-container">
+        <h1>Will you be my Valentine? ❤️</h1>
+        <p>There's only one right answer...</p>
+        <div class="buttons">
+            <button id="yesBtn" onclick="celebrate()">Yes</button>
+            <button id="noBtn" onmouseover="moveButton()" onclick="moveButton()">No</button>
+        </div>
+    </div>
 
-    <div class="buttons">
-        <button id="yesBtn" onclick="celebrate()">Yes</button>
-        <button id="noBtn" onmouseover="moveButton()">No</button>
+    <div id="success-container" class="success-msg">
+        <h1 style="font-size: 4rem;">Yay! 😍</h1>
+        <p style="font-size: 1.5rem;">I knew you'd say yes! <br> See you on the 14th! 🌹</p>
     </div>
 
     <script>
         function moveButton() {
             const btn = document.getElementById('noBtn');
-            // Calculate random positions within the viewport
-            const x = Math.random() * (window.innerWidth - btn.offsetWidth);
-            const y = Math.random() * (window.innerHeight - btn.offsetHeight);
             
-            btn.style.left = x + 'px';
-            btn.style.top = y + 'px';
+            // Generate random positions, keeping the button within the visible screen
+            const padding = 50;
+            const maxX = window.innerWidth - btn.offsetWidth - padding;
+            const maxY = window.innerHeight - btn.offsetHeight - padding;
+            
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+            
+            btn.style.left = randomX + 'px';
+            btn.style.top = randomY + 'px';
             btn.style.position = 'fixed';
         }
 
         function celebrate() {
-            document.body.innerHTML = `
-                <h1 style="font-size: 50px;">Yay! See you on the 14th! 🌹</h1>
-                <p style="font-size: 100px;">🎉🥰✨</p>
-            `;
+            // Hide the question and show the success message
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('success-container').style.display = 'flex';
+
+            // Launch Confetti!
+            const duration = 5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+              const timeLeft = animationEnd - Date.now();
+
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+
+              const particleCount = 50 * (timeLeft / duration);
+              // since particles fall down, start a bit higher than random
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+              confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
         }
     </script>
 </body>
